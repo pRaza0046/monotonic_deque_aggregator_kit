@@ -43,3 +43,10 @@ The trade-off is the fold.  `min` and `max` are O(1), but `fold` re-applies the 
 ## The awkward edge
 
 Eviction uses identity comparison (`is`) to decide whether the departing element is the front of a monotonic deque.  For small integers and interned strings this is indistinguishable from equality, but for large integers, tuples, or custom objects, two equal values may be distinct objects.  The deque stores the exact object that was pushed, so the identity check is correct as long as callers push the same object they expect to evict.  If you push freshly constructed equal objects and rely on eviction to remove the right one, the monotonic deque may retain a stale candidate for one extra step.  The window contents themselves are always correct; only the internal candidate set can lag by the evicted element's lifetime.  This is the standard space-for-time trade-off of the structure and is documented here so the behaviour is not a surprise.
+
+## Performance
+
+The window keeps a bounded buffer, so `push` is constant time and memory does not
+grow with the length of the stream. `peak` and `trough` are linear in the window
+size, which is the trade that keeps `push` cheap.
+
